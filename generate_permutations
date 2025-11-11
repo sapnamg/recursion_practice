@@ -1,0 +1,23 @@
+def generate_permutations(perm,n, depth = 0):
+    indent = "  " * depth
+    print(f"{indent}Entering Depth {depth}, current perm: {perm}")
+    if len(perm) == n:
+        print(f"New permutation: {perm}")
+        print(f"{indent}Exiting Depth {depth} due to found result")
+        return
+    
+    for k in range(n):
+        print(f"{indent}Trying k={k}")
+        if k not in perm:
+            perm.append(k)
+            print(f"{indent}Appending and entering recursion for k={k}")
+            generate_permutations(perm,n, depth+1)
+            print(f"{indent}Completed generation for k={k}; Current Depth={depth}")
+            perm.pop()
+            print(f"{indent}Pop end of list; Done with loop; Interim perm: {perm}")
+        else:
+            print(f"{indent}k in perm")
+            
+    print(f"{indent}Leaving Depth {depth}")
+            
+generate_permutations(perm= [], n=3)
