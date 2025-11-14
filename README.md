@@ -1,5 +1,5 @@
 # Recursive programs
-This repository contains Python programs created from class exercises that use recursive calls and backtracking. Multiple programs are held within as described below.
+This repository started with just a permutation generator, but now contains other Python programs created from class exercises that use recursive calls and backtracking. Multiple programs are held within as described below.
 
 ### <ins>Permutation Generator</ins>
 - This program generates all permutations of numbers ```0``` through ```n-1``` (currently set to ```n=3```), using recursion. It was created as a class exercise to understand recursion and backtracking. Print statements are included throughout to show recursion depth and what happens at the end of each loop.
