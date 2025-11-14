@@ -1,0 +1,155 @@
+#----------------------------------------------------------Function to Check validity of diagonal placement--------------------------------------------------------#
+def check_if_diag_allowed(perm, n, row, column, entry, indent):
+    #note: if current space is 0 = empty, it is always allowed, so only check values 1 and 2 (\, /)
+    
+    if entry == 0:
+        return True
+    
+    if row == 0:
+        if column == 0:
+                #if first entry in board, nothing to check prior to it
+                return True
+        elif column > 0 and column <n:
+                #if in first row, only need to check to the left of space, nothing above (and below and right not filled yet)
+                if perm[row][column-1] == 1:
+                    #if previous column is 1 = \, current can only be 1 = \ or 0 = empty
+                    if entry == 2:
+                        return False
+                if perm [row][column-1] == 2:
+                    if entry == 1:
+                        return False
+              
+    elif row > 0:
+        if column == 0:
+            if entry == 1:
+                if perm[row-1][column] == 2:
+                    return False
+            elif entry == 2:
+                if perm[row-1][column] == 1 or perm[row-1][column+1] == 2:
+                     return False
+        elif column > 0 and column < n-1:
+            if entry == 1:
+                if perm[row-1][column-1] == 1 or perm[row-1][column] == 2 or perm[row][column-1] == 2:
+                    return False
+            elif entry == 2:
+                if perm[row-1][column+1] == 2 or perm[row-1][column] == 1 or perm[row][column-1] == 1:
+                    return False
+        elif column == n-1:
+            if entry == 1:
+                if perm[row-1][column-1] == 1 or perm[row-1][column] == 2 or perm[row][column-1] == 2:
+                    return False
+            elif entry == 2:
+                if perm[row-1][column] == 1 or perm[row][column-1] == 1:
+                    return False
+    return True
+
+
+
+#-----------------------------------------------------------Function to Extend Board--------------------------------------------------------------------------------#
+def extend(perm, n, diagonals, row, column, bad_path_cache = None):
+
+    #-----------------------------------------------------Check if have a solution-----------------------------------------------------#
+    solutions = []
+    
+    #Count how many diagonals are placed so far
+    diag_count = 0
+    for _row in perm:
+        for _column in _row:
+            if _column in [1,2]:
+                diag_count+=1
+                
+    if diag_count == diagonals:
+        #return a deep copy of list rows in perm inside a list
+        return [[row[:] for row in perm]],[]
+        #backtrack to continue to search for other solutions
+        
+    #------------------------------------Checking if current path is already known to be impossible------------------------------------#
+    #check if bad_path_cache is initialized yet or not    
+    if bad_path_cache is None:
+        bad_path_cache = set()
+    
+    #create a set for current perm that can be checked against or added to bad_patch_cache if it is found to be impossible path
+    board_key = tuple(tuple(row) for row in perm)
+    
+    #check current perm against known set of bad paths:
+    if board_key in bad_path_cache:
+        return [], [board_key]
+        #backtrack to find other solutions, return empty list for solutions, and board_key to be added to bad_path_cache one level up    
+    
+    #-------------------------------------Checking if not enough spaces for remaining diagonals----------------------------------------#
+    remaining_spaces = row*n + column
+
+    #If more diagonals than spaces left, consider this path impossible, and add to bad_path_cache (already have current perm's board_key saved above)
+    if diagonals-diag_count > n*n-remaining_spaces:
+        bad_path_cache.add(board_key)
+        return [],[board_key]
+        #backtrack to find other solutions, return empty list for solutions, and board_key to be added to bad_path_cache one level up  
+
+
+
+    #------------------------------------------------Extending board fill-in----------------------------------------------------------#
+    #----------------------------------------Check if current indexed row exists-----------------------------------#
+    if row > len(perm)-1:
+        #if no existing row for current index, append empty list to represent that row
+        perm.append([])
+    
+    #-----------------------------------Attempt adding entry to current indexed space------------------------------#        
+    x = [2,1,0] #current space can be selected from this set of 0 = empty, 1 = \, 2 = /
+
+    for i in x:
+        entry = i
+        #if exiting from previous recursion level, check if current path is in bad_path_cache before proceeding to check other diagonal placements on this path
+        if board_key in bad_path_cache:
+            return [],[]
+            #backtrack from this path with no solution, no board_key needed to add to bad_patch_cache (because it already exists in it)
+
+        if check_if_diag_allowed(perm, n, row, column, entry, indent=""):
+            perm[row].append(entry)
+            
+            #------------------------------------------------Advanced to next space-----------------------------------------------------------#
+            if column < n-1:
+                nextrow = row
+                nextcolumn = column + 1
+            else:
+                nextrow = row + 1
+                nextcolumn = 0
+            
+            #enter recursive call, and save value returned from it to a variable
+            answer,bad_path = extend(perm, n, diagonals, nextrow, nextcolumn, bad_path_cache)
+            
+            #--------------------------------------Save returned list to set of solutions or cache as bad path---------------------------------#
+            #extend solutions list with answer (iteratble list of rows) from previously exited recursive call (empty list returns won't be added as they are empty)
+            solutions.extend(answer)
+            bad_path_cache.update(bad_path)
+            #-------------------------------------------------coming out of extend function----------------------------------------------------#
+            
+            #if coming out of extend function or don't pass check function, you either didn't find solution or are looking for another, so remove the last entry
+            perm[row].pop()
+    
+    return solutions,bad_path_cache
+
+
+#------------------------------------------------------------------Map Numbers to Diagonals--------------------------------------------------------------------------#
+def print_diags(entry):
+    match entry:
+        case 2:
+            return "/"
+        case 1:
+            return '\\'
+        case 0:
+            return " "
+
+#------------------------------------------------------------------Main Function to Print All Solutions---------------------------------------------------------------#
+def count_diagonal_solutions(n, diagonals):
+    solutions,bad_path_cache = extend([], n, diagonals, 0, 0)
+
+    new_board = []
+    print("Visual of all solutions found: ")
+    for board in solutions:
+        for row in board:
+            new_row = list(map(print_diags,row))
+            #printing a list directly shows \ as \\ (because python prints representation in a list); need to print as a single string to show \
+            print(" ".join(new_row))
+        print("\n")
+
+count_diagonal_solutions(5,16)
