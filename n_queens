@@ -1,0 +1,68 @@
+#------------------------------------------------Check if placement is on a digaonal---------------------------------------------#
+def check_if_on_diagonal(perm):
+    #get row index of last placed queen (i.e., last entry in perm)
+    i = len(perm)-1
+    
+    #for each row upto i, check if any queen's |row-column| or |row+column| are equal to current one's (squares on diagonals will have 
+    #i,j coordinateswith differences or sums equal to each other)
+    for row in range(i):
+        if i-row == abs(perm[i]-perm[row]):
+            return False       
+    return True
+
+#------------------------------------------------Generate Permutations for Queen Placement-----------------------------------------#
+def generate_permutations(n, perm):
+    #perm is an empty list, in which each element represents a row (with index = index of perm) on the n x n board, and the value of
+        #each element represents the column index where a queen is placed
+    
+    #solutions will be stored in this list:
+    solutions = []
+    
+    #------------------------------------------Check if completed a permutation/board-----------------------------------#
+    if len(perm) == n:
+        print(f"New permutation: {perm}")
+        return [perm[:]]
+    
+    #-----------------------------------Extend board by placing new queen on next row------------------------------------#
+    for k in range(n):
+        #if k value does not exist in board, that means no queen in that column, so is possible placement
+        if k not in perm:
+            #place queen in column k (row# is implied to be its index in the perm)
+            perm.append(k)
+            
+            #check if k placement is valid. Only need to check diagonal, since each element in perm is a row and each value 
+                #(i.e., column index) is unique, it is already determined that no two queens will occupy the same row or column
+            if check_if_on_diagonal(perm):
+                #If queen placement is valid, move on to see if need to place another queen
+                answer = generate_permutations(n, perm)
+                
+                #when exiting from previous generate_permutations function, store returned value for solutions
+                solutions.extend(answer)
+            
+            #when exiting from previous permutation, remove last placed queen (since it either did not lead to a solution or lead to a completed solution)
+            #this simultaneously goes back one row in the board (since rows are tied to index of last entry in perm)
+            perm.pop()
+    #when exiting each level of generate_perumations, return solutions to pass up to above level
+    return solutions
+
+#----------------------------------------------------Display Board for N Queens-------------------------------------------------------#
+def display_board(n,perm):
+    for row in range(n):
+        for column in range(n):
+            if column == perm[row]:
+                print ("Q", end = "")
+            else:
+                print ("__", end = "")
+        print("\n")
+        
+
+#----------------------------------------------------Main Function for N Queens-------------------------------------------------------#
+def main(n):
+    num_of_solutions = 0
+    solutions = generate_permutations(n, perm=[])
+    for board in solutions:
+        num_of_solutions += 1
+        display_board(n,board)
+        print("\n")
+    print(f"Total found solutions: {num_of_solutions}")
+main(8)
